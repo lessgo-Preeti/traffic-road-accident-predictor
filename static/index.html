@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Accident Risk Predictor 🚗</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.95em;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-predict {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-predict:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 15px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.high-risk {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .result.medium-risk {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+        }
+        
+        .result.low-risk {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            color: white;
+        }
+        
+        .result h3 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .result-item strong {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .result-item span {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading::after {
+            content: '⏳ Processing...';
+            font-size: 1.2em;
+            color: #667eea;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .info-box strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Traffic Accident Risk Predictor</h1>
+            <p>ML-Powered Risk Assessment System</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-box" id="modelInfo">
+                <strong>Model:</strong> Loading... | <strong>Accuracy:</strong> Loading...
+            </div>
+            
+            <form id="predictionForm">
+                <!-- Time Features -->
+                <div class="form-section">
+                    <h2>⏰ Time Information</h2>
+                    <div class="form-grid" id="timeFeatures">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Weather Features -->
+                <div class="form-section" id="weatherSection" style="display:none;">
+                    <h2>🌦️ Weather Conditions</h2>
+                    <div class="form-grid" id="weatherFeatures">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Road Features -->
+                <div class="form-section" id="roadSection" style="display:none;">
+                    <h2>🛣️ Road Information</h2>
+                    <div class="form-grid" id="roadFeatures">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-predict">🔮 Predict Risk</button>
+            </form>
+            
+            <div class="loading" id="loading"></div>
+            
+            <div class="result" id="result">
+                <h3 id="riskLevel">Risk Level</h3>
+                <div class="result-details">
+                    <div class="result-item">
+                        <strong>Risk Probability</strong>
+                        <span id="riskProb">0%</span>
+                    </div>
+                    <div class="result-item">
+                        <strong>Prediction Class</strong>
+                        <span id="predClass">-</span>
+                    </div>
+                    <div class="result-item">
+                        <strong>Model Used</strong>
+                        <span id="modelUsed">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let schema = null;
+        let modelInfo = null;
+
+        // Load schema and model info on page load
+        async function loadSchemaAndInfo() {
+            try {
+                // Load schema
+                const schemaRes = await fetch('/schema');
+                schema = await schemaRes.json();
+                
+                // Load model info
+                const infoRes = await fetch('/info');
+                modelInfo = await infoRes.json();
+                
+                // Update model info display
+                document.getElementById('modelInfo').innerHTML = `
+                    <strong>Model:</strong> ${modelInfo.model_name} | 
+                    <strong>Accuracy:</strong> ${(modelInfo.metrics.accuracy * 100).toFixed(2)}% | 
+                    <strong>F1-Score:</strong> ${(modelInfo.metrics.f1_score * 100).toFixed(2)}%
+                `;
+                
+                // Generate form fields
+                generateFormFields();
+                
+            } catch (error) {
+                console.error('Error loading schema:', error);
+                alert('Failed to load model schema. Please refresh the page.');
+            }
+        }
+
+        function generateFormFields() {
+            const timeContainer = document.getElementById('timeFeatures');
+            const weatherContainer = document.getElementById('weatherFeatures');
+            const roadContainer = document.getElementById('roadFeatures');
+            
+            schema.features.forEach(feature => {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = feature.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                label.setAttribute('for', feature);
+                
+                let input;
+                
+                if (schema.categorical_features.includes(feature)) {
+                    // Create select for categorical features
+                    input = document.createElement('select');
+                    input.id = feature;
+                    input.name = feature;
+                    input.required = true;
+                    
+                    // Add options based on feature type
+                    if (feature.includes('weather')) {
+                        ['Clear', 'Rain', 'Fog', 'Cloudy', 'Snow', 'Storm', 'Other'].forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.textContent = opt;
+                            input.appendChild(option);
+                        });
+                    } else if (feature.includes('road')) {
+                        ['highway', 'arterial', 'urban', 'rural', 'residential', 'unknown'].forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
+                            input.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.value = schema.example[feature];
+                        option.textContent = schema.example[feature];
+                        input.appendChild(option);
+                    }
+                    
+                } else {
+                    // Create number input for numerical features
+                    input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = feature;
+                    input.name = feature;
+                    input.required = true;
+                    input.value = schema.example[feature] || 0;
+                    
+                    // Set appropriate step and min/max
+                    if (feature.includes('hour')) {
+                        input.min = 0;
+                        input.max = 23;
+                    } else if (feature.includes('day_of_week')) {
+                        input.min = 0;
+                        input.max = 6;
+                    } else if (feature.includes('month')) {
+                        input.min = 1;
+                        input.max = 12;
+                    } else if (feature.includes('is_') || feature.includes('flag')) {
+                        input.min = 0;
+                        input.max = 1;
+                    } else {
+                        input.step = 'any';
+                    }
+                }
+                
+                formGroup.appendChild(label);
+                formGroup.appendChild(input);
+                
+                // Categorize fields
+                if (feature.includes('hour') || feature.includes('day') || feature.includes('month') || 
+                    feature.includes('weekend') || feature.includes('rush') || feature.includes('night') || 
+                    feature.includes('monsoon')) {
+                    timeContainer.appendChild(formGroup);
+                } else if (feature.includes('weather') || feature.includes('Temperature') || 
+                           feature.includes('Visibility') || feature.includes('Humidity') || 
+                           feature.includes('Wind') || feature.includes('precipitation')) {
+                    weatherContainer.appendChild(formGroup);
+                    document.getElementById('weatherSection').style.display = 'block';
+                } else {
+                    roadContainer.appendChild(formGroup);
+                    document.getElementById('roadSection').style.display = 'block';
+                }
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            // Convert form data to proper types
+            schema.features.forEach(feature => {
+                const value = formData.get(feature);
+                if (schema.categorical_features.includes(feature)) {
+                    data[feature] = value;
+                } else {
+                    data[feature] = parseFloat(value);
+                }
+            });
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Display result
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.className = 'result';
+                    
+                    if (result.prediction.risk_probability >= 70) {
+                        resultDiv.classList.add('high-risk');
+                    } else if (result.prediction.risk_probability >= 40) {
+                        resultDiv.classList.add('medium-risk');
+                    } else {
+                        resultDiv.classList.add('low-risk');
+                    }
+                    
+                    document.getElementById('riskLevel').textContent = result.prediction.risk_level;
+                    document.getElementById('riskProb').textContent = result.prediction.risk_probability + '%';
+                    document.getElementById('predClass').textContent = result.prediction.class === 1 ? 'High Risk (1)' : 'Low Risk (0)';
+                    document.getElementById('modelUsed').textContent = result.model;
+                    
+                    resultDiv.style.display = 'block';
+                } else {
+                    alert('Error: ' + (result.error || 'Prediction failed'));
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to get prediction. Please try again.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+
+        // Load schema on page load
+        loadSchemaAndInfo();
+    </script>
+</body>
+</html>
