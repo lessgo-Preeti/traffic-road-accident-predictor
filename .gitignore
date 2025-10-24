@@ -14,6 +14,7 @@ instance/
 .env
 .venv
 venv/
+__pycache__/
 
 # Jupyter
 .ipynb_checkpoints
