@@ -1,0 +1,106 @@
+{
+  "best_model": "XGBoost",
+  "training_date": "2025-10-25 00:53:02",
+  "dataset": {
+    "train_size": 2004,
+    "test_size": 502,
+    "features": [
+      "hour",
+      "day_of_week",
+      "month",
+      "is_weekend",
+      "is_rush_hour",
+      "is_night",
+      "is_monsoon",
+      "weather_main",
+      "road_type",
+      "is_junction",
+      "is_urban",
+      "is_highway",
+      "Year",
+      "Number of Vehicles Involved",
+      "Number of Casualties",
+      "Number of Fatalities",
+      "Speed Limit (km/h)",
+      "Driver Age",
+      "year"
+    ],
+    "categorical_features": [
+      "weather_main",
+      "road_type"
+    ],
+    "numerical_features": [
+      "hour",
+      "day_of_week",
+      "month",
+      "is_weekend",
+      "is_rush_hour",
+      "is_night",
+      "is_monsoon",
+      "is_junction",
+      "is_urban",
+      "is_highway",
+      "Year",
+      "Number of Vehicles Involved",
+      "Number of Casualties",
+      "Number of Fatalities",
+      "Speed Limit (km/h)",
+      "Driver Age",
+      "year"
+    ],
+    "target_distribution_train": {
+      "1": 1338,
+      "0": 666
+    },
+    "target_distribution_test": {
+      "1": 335,
+      "0": 167
+    }
+  },
+  "performance": {
+    "Logistic Regression": {
+      "accuracy": 0.5239043824701195,
+      "precision": 0.6889763779527559,
+      "recall": 0.5223880597014925,
+      "f1_score": 0.594227504244482,
+      "roc_auc": 0.5335239967825542,
+      "pr_auc": 0.7034699788339503,
+      "training_time": 0.0496671199798584
+    },
+    "Decision Tree": {
+      "accuracy": 0.549800796812749,
+      "precision": 0.7088122605363985,
+      "recall": 0.5522388059701493,
+      "f1_score": 0.6208053691275168,
+      "roc_auc": 0.56064885155063,
+      "pr_auc": 0.700735693661082,
+      "training_time": 0.024921178817749023
+    },
+    "Random Forest": {
+      "accuracy": 0.6294820717131474,
+      "precision": 0.6795180722891566,
+      "recall": 0.8417910447761194,
+      "f1_score": 0.752,
+      "roc_auc": 0.5149343104835106,
+      "pr_auc": 0.663808538159921,
+      "training_time": 0.7918450832366943
+    },
+    "XGBoost": {
+      "accuracy": 0.6374501992031872,
+      "precision": 0.6861313868613139,
+      "recall": 0.8417910447761194,
+      "f1_score": 0.7560321715817695,
+      "roc_auc": 0.5028867637858612,
+      "pr_auc": 0.6487111348022165,
+      "training_time": 1.378000020980835
+    }
+  },
+  "best_model_metrics": {
+    "accuracy": 0.6374501992031872,
+    "precision": 0.6861313868613139,
+    "recall": 0.8417910447761194,
+    "f1_score": 0.7560321715817695,
+    "roc_auc": 0.5028867637858612,
+    "pr_auc": 0.6487111348022165
+  }
+}
