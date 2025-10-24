@@ -1,0 +1,49 @@
+{
+  "total_features": 19,
+  "feature_list": [
+    "hour",
+    "day_of_week",
+    "month",
+    "is_weekend",
+    "is_rush_hour",
+    "is_night",
+    "is_monsoon",
+    "weather_main",
+    "road_type",
+    "is_junction",
+    "is_urban",
+    "is_highway",
+    "Year",
+    "Number of Vehicles Involved",
+    "Number of Casualties",
+    "Number of Fatalities",
+    "Speed Limit (km/h)",
+    "Driver Age",
+    "year"
+  ],
+  "categorical_features": [
+    "weather_main",
+    "road_type"
+  ],
+  "numerical_features": [
+    "hour",
+    "day_of_week",
+    "month",
+    "is_junction",
+    "is_highway",
+    "Year",
+    "Number of Vehicles Involved",
+    "Number of Casualties",
+    "Number of Fatalities",
+    "Speed Limit (km/h)",
+    "Driver Age",
+    "year"
+  ],
+  "target_column": "target_binary",
+  "train_size": 2004,
+  "test_size": 502,
+  "class_distribution": {
+    "1": 1673,
+    "0": 833
+  }
+}
