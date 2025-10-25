@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Accident Risk Predictor 🚗</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,36 +13,51 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             min-height: 100vh;
             padding: 20px;
+            color: #e0e0e0;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
             overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
         }
         
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 40px;
             text-align: center;
+            border-radius: 20px 20px 0 0;
         }
         
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.8em;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+            font-size: 1.2em;
+            opacity: 0.95;
         }
         
         .content {
@@ -49,15 +65,22 @@
         }
         
         .form-section {
-            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .form-section h2 {
-            color: #333;
+            color: #fff;
             margin-bottom: 20px;
             font-size: 1.5em;
-            border-bottom: 3px solid #667eea;
             padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .form-grid {
@@ -74,15 +97,17 @@
         .form-group label {
             font-weight: 600;
             margin-bottom: 8px;
-            color: #555;
+            color: #b0b0b0;
             font-size: 0.95em;
         }
         
         .form-group input,
         .form-group select {
             padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border-radius: 10px;
             font-size: 1em;
             transition: all 0.3s;
         }
@@ -91,26 +116,28 @@
         .form-group select:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
         
         .btn-predict {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            font-weight: 600;
+            padding: 18px 40px;
+            font-size: 1.3em;
+            font-weight: 700;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
             margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
         
         .btn-predict:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
         }
         
         .btn-predict:active {
@@ -119,10 +146,21 @@
         
         .result {
             margin-top: 30px;
-            padding: 30px;
-            border-radius: 15px;
+            padding: 0;
+            border-radius: 20px;
             display: none;
             animation: slideIn 0.5s ease;
+        }
+        
+        .result-header {
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .result-body {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
         }
         
         @keyframes slideIn {
@@ -136,61 +174,83 @@
             }
         }
         
-        .result.high-risk {
+        .result.high-risk .result-header {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
         }
         
-        .result.medium-risk {
+        .result.medium-risk .result-header {
             background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
             color: #333;
         }
         
-        .result.low-risk {
+        .result.low-risk .result-header {
             background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
             color: white;
         }
         
         .result h3 {
-            font-size: 2em;
-            margin-bottom: 15px;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .result-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 20px;
             margin-top: 20px;
         }
         
         .result-item {
-            background: rgba(255,255,255,0.2);
-            padding: 15px;
-            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            padding: 20px;
+            border-radius: 15px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .result-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.12);
         }
         
         .result-item strong {
             display: block;
             font-size: 0.9em;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
+            color: #b0b0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .result-item span {
-            font-size: 1.5em;
+            font-size: 1.8em;
             font-weight: 700;
+            color: #fff;
         }
         
         .loading {
             text-align: center;
             padding: 20px;
             display: none;
+            color: #667eea;
         }
         
         .loading::after {
             content: '⏳ Processing...';
-            font-size: 1.2em;
-            color: #667eea;
+            font-size: 1.3em;
             animation: pulse 1.5s infinite;
         }
         
@@ -200,31 +260,64 @@
         }
         
         .info-box {
-            background: #f8f9fa;
+            background: rgba(102, 126, 234, 0.1);
             border-left: 4px solid #667eea;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
+            color: #e0e0e0;
         }
         
         .info-box strong {
+            color: #667eea;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .stat-card h4 {
+            color: #b0b0b0;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: 700;
             color: #667eea;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🚗 Traffic Accident Risk Predictor</h1>
-            <p>ML-Powered Risk Assessment System</p>
+        <div class="card">
+            <div class="header">
+                <h1>🚗 Traffic Accident Risk Predictor</h1>
+                <p>AI-Powered Risk Assessment with Advanced Analytics</p>
+            </div>
         </div>
         
-        <div class="content">
-            <div class="info-box" id="modelInfo">
-                <strong>Model:</strong> Loading... | <strong>Accuracy:</strong> Loading...
-            </div>
-            
-            <form id="predictionForm">
+        <div class="card">
+            <div class="content">
+                <div class="info-box" id="modelInfo">
+                    <strong>Model:</strong> Loading... | <strong>Accuracy:</strong> Loading...
+                </div>
+                
+                <form id="predictionForm">
                 <!-- Time Features -->
                 <div class="form-section">
                     <h2>⏰ Time Information</h2>
@@ -249,26 +342,40 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-predict">🔮 Predict Risk</button>
+                <button type="submit" class="btn-predict">🔮 Predict Risk Level</button>
             </form>
             
             <div class="loading" id="loading"></div>
-            
-            <div class="result" id="result">
+            </div>
+        </div>
+        
+        <div class="card" id="result" style="display: none;">
+            <div class="result-header">
                 <h3 id="riskLevel">Risk Level</h3>
-                <div class="result-details">
-                    <div class="result-item">
-                        <strong>Risk Probability</strong>
-                        <span id="riskProb">0%</span>
+                <p id="riskDescription" style="font-size: 1.2em; margin-top: 10px;">Analysis complete</p>
+            </div>
+            <div class="result-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Risk Probability</h4>
+                        <div class="value" id="riskProb">0%</div>
                     </div>
-                    <div class="result-item">
-                        <strong>Prediction Class</strong>
-                        <span id="predClass">-</span>
+                    <div class="stat-card">
+                        <h4>Prediction Class</h4>
+                        <div class="value" id="predClass">-</div>
                     </div>
-                    <div class="result-item">
-                        <strong>Model Used</strong>
-                        <span id="modelUsed">-</span>
+                    <div class="stat-card">
+                        <h4>Model Used</h4>
+                        <div class="value" id="modelUsed" style="font-size: 1.5em;">-</div>
                     </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="probabilityChart"></canvas>
                 </div>
             </div>
         </div>
@@ -431,22 +538,32 @@
                 if (response.ok) {
                     // Display result
                     const resultDiv = document.getElementById('result');
-                    resultDiv.className = 'result';
+                    resultDiv.className = 'card';
+                    
+                    const resultHeader = resultDiv.querySelector('.result-header');
+                    resultHeader.className = 'result-header';
                     
                     if (result.prediction.risk_probability >= 70) {
-                        resultDiv.classList.add('high-risk');
+                        resultHeader.classList.add('high-risk');
+                        document.getElementById('riskDescription').textContent = '⚠️ High accident risk detected!';
                     } else if (result.prediction.risk_probability >= 40) {
-                        resultDiv.classList.add('medium-risk');
+                        resultHeader.classList.add('medium-risk');
+                        document.getElementById('riskDescription').textContent = '⚡ Moderate risk - Exercise caution';
                     } else {
-                        resultDiv.classList.add('low-risk');
+                        resultHeader.classList.add('low-risk');
+                        document.getElementById('riskDescription').textContent = '✅ Low risk - Safe conditions';
                     }
                     
                     document.getElementById('riskLevel').textContent = result.prediction.risk_level;
                     document.getElementById('riskProb').textContent = result.prediction.risk_probability + '%';
-                    document.getElementById('predClass').textContent = result.prediction.class === 1 ? 'High Risk (1)' : 'Low Risk (0)';
+                    document.getElementById('predClass').textContent = result.prediction.class === 1 ? 'High (1)' : 'Low (0)';
                     document.getElementById('modelUsed').textContent = result.model;
                     
+                    // Create charts
+                    createCharts(result.prediction);
+                    
                     resultDiv.style.display = 'block';
+                    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 } else {
                     alert('Error: ' + (result.error || 'Prediction failed'));
                 }
@@ -458,6 +575,123 @@
                 document.getElementById('loading').style.display = 'none';
             }
         });
+
+        // Chart instances
+        let riskChartInstance = null;
+        let probabilityChartInstance = null;
+
+        function createCharts(prediction) {
+            // Destroy existing charts
+            if (riskChartInstance) riskChartInstance.destroy();
+            if (probabilityChartInstance) probabilityChartInstance.destroy();
+
+            // Risk Gauge Chart (Doughnut)
+            const riskCtx = document.getElementById('riskChart').getContext('2d');
+            riskChartInstance = new Chart(riskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Safe', 'At Risk'],
+                    datasets: [{
+                        data: [
+                            100 - prediction.risk_probability,
+                            prediction.risk_probability
+                        ],
+                        backgroundColor: [
+                            'rgba(72, 187, 120, 0.8)',
+                            'rgba(245, 87, 108, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(72, 187, 120, 1)',
+                            'rgba(245, 87, 108, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e0e0e0',
+                                font: { size: 14 }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Risk Distribution',
+                            color: '#fff',
+                            font: { size: 18, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+
+            // Probability Bar Chart
+            const probCtx = document.getElementById('probabilityChart').getContext('2d');
+            probabilityChartInstance = new Chart(probCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Low Risk', 'High Risk'],
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: [
+                            prediction.low_risk_probability,
+                            prediction.high_risk_probability
+                        ],
+                        backgroundColor: [
+                            'rgba(72, 187, 120, 0.7)',
+                            'rgba(245, 87, 108, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(72, 187, 120, 1)',
+                            'rgba(245, 87, 108, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#e0e0e0',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e0e0e0'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Risk Probability Breakdown',
+                            color: '#fff',
+                            font: { size: 18, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
 
         // Load schema on page load
         loadSchemaAndInfo();
